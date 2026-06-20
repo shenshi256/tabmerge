@@ -1,0 +1,45 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.exe.config
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.csproj.user
+*.sln.docstates
+*.userosscache
+*.sln.cache
+*.cache
+*.Cache
+*.ncb
+*.sbr
+*.tmp
+*.tmp_proj
+*.log
+*.tlog
+*.idb
+*.pdb
+*.ilk
+*.bsc
+*.aps
+
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/repositories.config
+*.nupkg
+
+# Ignore all markdown files
+*.md
+*.mmd
+
+# Except README.md
+!README.md
