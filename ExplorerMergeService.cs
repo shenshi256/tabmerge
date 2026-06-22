@@ -1,7 +1,6 @@
-﻿using SHDocVw;
+using SHDocVw;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Automation;
@@ -129,7 +128,18 @@ namespace com.yuanheyuekeji.tabmerge
                     return true;
                 }
 
-                OpenPathInNewTab(mainBrowser, target);
+                IntPtr newWindowHwnd = new IntPtr(browser.HWND);
+                ShowWindow(newWindowHwnd, SW_HIDE);
+                DebugLogger.Log("hide", "hwnd=" + newWindowHwnd);
+
+                if (!OpenPathInNewTab(mainBrowser, target))
+                {
+                    ShowWindow(newWindowHwnd, SW_SHOW);
+                    DebugLogger.Log("hide-restore", "hwnd=" + newWindowHwnd);
+                    ReleaseCom(browser);
+                    return false;
+                }
+
                 DebugLogger.Log("open-tab", "target=" + target);
 
                 CloseWindowDelayed(browser);
@@ -156,11 +166,11 @@ namespace com.yuanheyuekeji.tabmerge
             timer.Start();
         }
 
-        private static void OpenPathInNewTab(InternetExplorer browser, string path)
+        private static bool OpenPathInNewTab(InternetExplorer browser, string path)
         {
             if (browser == null || string.IsNullOrWhiteSpace(path))
             {
-                return;
+                return false;
             }
 
             BringWindowToFront(browser);
@@ -191,7 +201,7 @@ namespace com.yuanheyuekeji.tabmerge
                         System.Threading.Thread.Sleep(50);
                         SendKeys.SendWait("{ENTER}");
                         DebugLogger.Log("uia", "done");
-                        return;
+                        return true;
                     }
                     else
                     {
@@ -203,6 +213,8 @@ namespace com.yuanheyuekeji.tabmerge
             {
                 DebugLogger.Log("uia", "exception");
             }
+
+            return false;
         }
 
         private static void BringWindowToFront(InternetExplorer browser)
@@ -232,6 +244,8 @@ namespace com.yuanheyuekeji.tabmerge
             }
         }
 
+        private const int SW_HIDE = 0;
+        private const int SW_SHOW = 5;
         private const int SW_RESTORE = 9;
         private const int WM_SYSCOMMAND = 0x0112;
         private const int SC_CLOSE = 0xF060;
