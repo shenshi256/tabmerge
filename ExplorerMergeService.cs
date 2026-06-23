@@ -326,7 +326,7 @@ namespace com.yuanheyuekeji.tabmerge
                         DebugLogger.Log("close", "hwnd=" + hwnd + " targetHwnd=" + targetHwnd + " confirmed=" + confirmed);
                         PostMessage(hwnd, WM_SYSCOMMAND, new IntPtr(SC_CLOSE), IntPtr.Zero);
                         System.Threading.Thread.Sleep(100);
-                        BringWindowToFrontByHandle(targetHwnd);
+                        BringTargetToFrontIfStillRelevant(hwnd.ToInt64(), targetHwnd);
                     }
                 }
                 catch
@@ -731,6 +731,18 @@ namespace com.yuanheyuekeji.tabmerge
             }
 
             return "active=" + group.ActiveWindowHandle + ", handles=" + string.Join(",", group.WindowHandles.ToArray());
+        }
+
+        private void BringTargetToFrontIfStillRelevant(long sourceHwnd, long targetHwnd)
+        {
+            long foregroundHwnd = GetForegroundWindow().ToInt64();
+            if (foregroundHwnd != 0 && foregroundHwnd != sourceHwnd && foregroundHwnd != targetHwnd)
+            {
+                DebugLogger.Log("focus-skip", "foreground=" + foregroundHwnd + " source=" + sourceHwnd + " target=" + targetHwnd);
+                return;
+            }
+
+            BringWindowToFrontByHandle(targetHwnd);
         }
 
         private void BringWindowToFrontByHandle(long hwnd)

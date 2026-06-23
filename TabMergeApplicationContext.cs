@@ -1,5 +1,7 @@
 using Microsoft.Win32;
 using System;
+using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace com.yuanheyuekeji.tabmerge
@@ -35,7 +37,7 @@ namespace com.yuanheyuekeji.tabmerge
 
             logMenuItem = new ToolStripMenuItem("开启日志")
             {
-                Checked = DebugLogger.TryEnable()
+                Checked = DebugLogger.Enabled
             };
             logMenuItem.Click += LogMenuItem_Click;
 
@@ -51,7 +53,7 @@ namespace com.yuanheyuekeji.tabmerge
             notifyIcon = new NotifyIcon
             {
                 ContextMenuStrip = menu,
-                Icon = System.Drawing.SystemIcons.Application,
+                Icon = LoadTrayIcon(),
                 Text = "TabMerge",
                 Visible = true
             };
@@ -61,6 +63,20 @@ namespace com.yuanheyuekeji.tabmerge
                 MergeEnabled = mergeMenuItem.Checked
             };
             mergeService.Start();
+        }
+
+        private static Icon LoadTrayIcon()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (var stream = assembly.GetManifestResourceStream("com.yuanheyuekeji.tabmerge.favicon.ico"))
+            {
+                if (stream == null)
+                {
+                    return SystemIcons.Application;
+                }
+
+                return new Icon(stream);
+            }
         }
 
         private void MergeMenuItem_Click(object sender, EventArgs e)
