@@ -35,7 +35,7 @@ namespace com.yuanheyuekeji.tabmerge
 
             logMenuItem = new ToolStripMenuItem("开启日志")
             {
-                Checked = false
+                Checked = DebugLogger.TryEnable()
             };
             logMenuItem.Click += LogMenuItem_Click;
 
