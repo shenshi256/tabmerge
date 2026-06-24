@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace com.yuanheyuekeji.tabmerge
@@ -11,9 +12,19 @@ namespace com.yuanheyuekeji.tabmerge
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new TabMergeApplicationContext());
+            bool createdNew;
+            using (var mutex = new Mutex(true, @"Local\com.yuanheyuekeji.tabmerge", out createdNew))
+            {
+                if (!createdNew)
+                {
+                    MessageBox.Show("程序已在运行中，请查看托盘图标。", "TabMerge", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new TabMergeApplicationContext());
+            }
         }
     }
 }
