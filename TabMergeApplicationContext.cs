@@ -136,17 +136,27 @@ namespace com.yuanheyuekeji.tabmerge
             using (RegistryKey key = Registry.CurrentUser.OpenSubKey(StartupRegistryPath, false))
             {
                 string value = key?.GetValue(StartupName) as string;
-                return string.Equals(value, GetStartupCommand(), StringComparison.OrdinalIgnoreCase);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return false;
+                }
+
+                if (!string.Equals(value, GetStartupCommand(), StringComparison.OrdinalIgnoreCase))
+                {
+                    SetStartup(true);
+                }
+
+                return true;
             }
         }
 
         private void SetStartup(bool enabled)
         {
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(StartupRegistryPath, true))
+            using (RegistryKey key = Registry.CurrentUser.CreateSubKey(StartupRegistryPath))
             {
                 if (enabled)
                 {
-                    key?.SetValue(StartupName, GetStartupCommand());
+                    key?.SetValue(StartupName, GetStartupCommand(), RegistryValueKind.String);
                 }
                 else
                 {
