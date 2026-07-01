@@ -21,7 +21,8 @@ namespace com.yuanheyuekeji.tabmerge
             public long ActiveWindowHandle;
         }
 
-        // 周期性刷新窗口组、前台窗口、pending 窗口等状态。
+        // 周期性扫描新窗口，并刷新窗口组、前台窗口、pending 窗口等状态。
+        // 不能只依赖 ShellWindows.WindowRegistered，因为外部程序打开文件夹时该事件不一定稳定触发。
         private readonly Timer mainWindowTimer;
 
         // 高频记录鼠标左键状态，用来辅助判断“拖出标签页”行为。
@@ -65,8 +66,12 @@ namespace com.yuanheyuekeji.tabmerge
         public ExplorerMergeService(Control invoker)
         {
             this.invoker = invoker;
-            mainWindowTimer = new Timer { Interval = 1500 };
-            mainWindowTimer.Tick += (sender, args) => RefreshWindowGroups();
+            /// <summary>
+            /// 周期性扫描新窗口，并刷新窗口组、前台窗口、pending 窗口等状态。
+            /// 不能只依赖 ShellWindows.WindowRegistered，因为外部程序打开文件夹时该事件不一定稳定触发
+            /// </summary>
+            mainWindowTimer = new Timer { Interval = 800 };
+            mainWindowTimer.Tick += (sender, args) => HandleNewWindows();
             mouseStateTimer = new Timer { Interval = 100 };
             mouseStateTimer.Tick += (sender, args) => UpdateMouseState();
         }
@@ -131,6 +136,11 @@ namespace com.yuanheyuekeji.tabmerge
         /// </summary>
         private void HandleNewWindows()
         {
+            if (!MergeEnabled || disposed)
+            {
+                return;
+            }
+
             // 扫描当前 ShellWindows，找出不在 knownWindows 里的新 Explorer 窗口。
             // 新窗口分三类：
             // 1. “此电脑”/无效路径：放入 ignoredWindows，后续继续观察；
